@@ -2,13 +2,16 @@ package com.fenlan.spring.shop;
 
 import com.fenlan.spring.shop.DAO.CategoryDAO;
 import com.fenlan.spring.shop.DAO.RequestDAO;
+import com.fenlan.spring.shop.DAO.ShopDAO;
 import com.fenlan.spring.shop.DAO.SysRoleDAO;
 import com.fenlan.spring.shop.DAO.UserDAO;
 import com.fenlan.spring.shop.bean.Category;
 import com.fenlan.spring.shop.bean.Request;
+import com.fenlan.spring.shop.bean.Shop;
 import com.fenlan.spring.shop.bean.SysRole;
 import com.fenlan.spring.shop.bean.User;
 import com.fenlan.spring.shop.service.RequestService;
+import com.fenlan.spring.shop.service.ShopService;
 import com.fenlan.spring.shop.service.UserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +34,8 @@ public class ShopApplicationTests {
     RequestDAO requestDAO;
     @Autowired
     RequestService requestService;
+    @Autowired
+    ShopService shopService;
     @Autowired
     CategoryDAO categoryDAO;
 
@@ -91,5 +96,4 @@ public class ShopApplicationTests {
         registerAdmin();
         addCategory();
     }
-
 }

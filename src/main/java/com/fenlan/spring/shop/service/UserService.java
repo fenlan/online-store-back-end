@@ -97,7 +97,7 @@ public class UserService implements UserDetailsService {
     public void delete(Long id) {
         User user = userDAO.findById(id).get();
         if (user.getRoles().contains(sysRoleDAO.findByName("ROLE_SELLER"))) {
-            Shop shop = shopDAO.findByUserId(user.getId());
+            Shop shop = shopDAO.findByUser(user);
             shopDAO.deleteById(shop.getId());
         }
         user.setRoles(Arrays.asList(sysRoleDAO.findByName("ROLE_USER")));

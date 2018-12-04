@@ -30,7 +30,7 @@ public class ManageSellerController {
     BlackListService blackListService;
 
     @GetMapping("/list")
-    public ResponseEntity<Object> list(@RequestParam("page") Integer page,
+    public ResponseEntity<ResponseFormat> list(@RequestParam("page") Integer page,
                                        @RequestParam("size") Integer size) {
         try {
             List<User> list = userService.list(page, size);
@@ -52,7 +52,7 @@ public class ManageSellerController {
 
     // shop 与seller 一对一关系
     @GetMapping("/amount")
-    public ResponseEntity<Object> numOfSeller() {
+    public ResponseEntity<ResponseFormat> numOfSeller() {
             return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
                     .error(null)
                     .message("seller amount")
@@ -62,10 +62,9 @@ public class ManageSellerController {
     }
 
     @GetMapping("/search/sellername")
-    public ResponseEntity<Object> searchBySellerame(@RequestParam("username") String sellerName) {
+    public ResponseEntity<ResponseFormat> searchBySellerame(@RequestParam("username") String sellerName) {
         try {
             User seller = userService.findByNameAndRole(sellerName, "ROLE_SELLER");
-            // Shop shop = shopService.findByUserId(seller.getId());
             return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
                     .error(null)
                     .message("search success")
@@ -83,7 +82,7 @@ public class ManageSellerController {
     }
 
     @GetMapping("/search/shopname")
-    public ResponseEntity<Object> searchByShopName(@RequestParam("shopname") String shopName) {
+    public ResponseEntity<ResponseFormat> searchByShopName(@RequestParam("shopname") String shopName) {
         try {
             Shop shop = shopService.findByName(shopName);
             return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
@@ -103,7 +102,7 @@ public class ManageSellerController {
     }
 
     @GetMapping("/request/amount")
-    public ResponseEntity<Object> numOfStatus(@RequestParam("status") Integer status) {
+    public ResponseEntity<ResponseFormat> numOfStatus(@RequestParam("status") Integer status) {
         try {
             long amount = requestService.numOfStatus(status);
             return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
@@ -123,7 +122,7 @@ public class ManageSellerController {
     }
 
     @GetMapping("/request/list")
-    public ResponseEntity<Object> listRequest(@RequestParam(value = "status", required = false) Integer status,
+    public ResponseEntity<ResponseFormat> listRequest(@RequestParam(value = "status", required = false) Integer status,
                                               @RequestParam("page") Integer page,
                                               @RequestParam("size") Integer size) {
         try {
@@ -144,7 +143,7 @@ public class ManageSellerController {
     }
 
     @DeleteMapping("/request/delete")
-    public ResponseEntity<Object> deleteRequest(@RequestParam("id") Long id) {
+    public ResponseEntity<ResponseFormat> deleteRequest(@RequestParam("id") Long id) {
         try {
             requestService.delete(id);
             return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
@@ -164,7 +163,7 @@ public class ManageSellerController {
     }
 
     @GetMapping("/shop/amount")
-    public ResponseEntity<Object> numOfShop() {
+    public ResponseEntity<ResponseFormat> numOfShop() {
         return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
                 .error(null)
                 .message("shop amount")
@@ -174,7 +173,7 @@ public class ManageSellerController {
     }
 
     @GetMapping("/shop/list")
-    public ResponseEntity<Object> listShop(@RequestParam("page") Integer page,
+    public ResponseEntity<ResponseFormat> listShop(@RequestParam("page") Integer page,
                                            @RequestParam("size") Integer size) {
         try {
             return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
@@ -194,7 +193,7 @@ public class ManageSellerController {
     }
 
     @DeleteMapping("/shop/delete")
-    public ResponseEntity<Object> deleteShop(@RequestParam("id") Long id) {
+    public ResponseEntity<ResponseFormat> deleteShop(@RequestParam("id") Long id) {
         try {
             shopService.delete(id);
             return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
@@ -215,7 +214,7 @@ public class ManageSellerController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Object> deleteSeller(@RequestParam("id") Long id) {
+    public ResponseEntity<ResponseFormat> deleteSeller(@RequestParam("id") Long id) {
         userService.delete(id);
         return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
                 .error(null)
@@ -227,7 +226,7 @@ public class ManageSellerController {
 
 
     @PutMapping(value = "/request/deal")
-    public ResponseEntity<Object> dealRequest(@RequestBody Map<String, Object> map) {
+    public ResponseEntity<ResponseFormat> updateRequest(@RequestBody Map<String, Object> map) {
         Long requestId = Long.parseLong(map.get("id").toString());
         Integer status = Integer.parseInt(map.get("status").toString());
         try {
@@ -248,7 +247,7 @@ public class ManageSellerController {
     }
 
     @PostMapping("/blacklist/add")
-    public ResponseEntity<Object> addEntity(@RequestBody Map map) {
+    public ResponseEntity<ResponseFormat> addEntity(@RequestBody Map map) {
         Integer type = Integer.parseInt(map.get("type").toString());
         Long id = Long.parseLong(map.get("id").toString());
         try {
@@ -270,7 +269,7 @@ public class ManageSellerController {
     }
 
     @GetMapping("/blacklist/list")
-    public ResponseEntity<Object> listBlackList(@RequestParam(value = "type", required = false) Integer type,
+    public ResponseEntity<ResponseFormat> listBlackList(@RequestParam(value = "type", required = false) Integer type,
                                                 @RequestParam("page") Integer page,
                                                 @RequestParam("size") Integer size) {
         try {
@@ -308,7 +307,7 @@ public class ManageSellerController {
     }
 
     @GetMapping("/blacklist/amount")
-    public ResponseEntity<Object> amountBlackList(@RequestParam(value = "type", required = false) Integer type) {
+    public ResponseEntity<ResponseFormat> amountBlackList(@RequestParam(value = "type", required = false) Integer type) {
         try {
             Long amount = blackListService.amountOfType(type);
             return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
