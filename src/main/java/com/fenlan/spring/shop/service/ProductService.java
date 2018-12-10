@@ -105,6 +105,14 @@ public class ProductService {
         return list;
     }
 
+    public List<Product> findByNameContain(String name, Integer page, Integer size) throws Exception {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createTime"));
+        List<Product> list = productDAO.findAllByNameContaining(pageable, name);
+        if (list.size() == 0)
+            throw new Exception("not found this product");
+        return list;
+    }
+
     public Product findByNamAndShop(String name) throws Exception {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         user = userDAO.findById(user.getId()).get();
@@ -147,6 +155,10 @@ public class ProductService {
 
     public long amount() {
         return productDAO.count();
+    }
+
+    public long amountByName(String name) {
+        return productDAO.countByNameContaining(name);
     }
 
     public List<Product> list(Integer page, Integer size) throws Exception {

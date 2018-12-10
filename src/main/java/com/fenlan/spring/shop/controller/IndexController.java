@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/")
@@ -33,6 +34,8 @@ public class IndexController {
     CategoryService categoryService;
     @Autowired
     ProductService productService;
+    @Autowired
+    UserService userService;
 
     @GetMapping("")
     public ResponseEntity<ResponseFormat> index(Authentication auth) {
@@ -148,6 +151,16 @@ public class IndexController {
         }
     }
 
+    @GetMapping("amount")
+    public ResponseEntity<ResponseFormat> amount() {
+        return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
+                .error(null)
+                .message("get product success")
+                .path(request.getServletPath())
+                .data(productService.amount())
+                .build(), HttpStatus.OK);
+    }
+
     @GetMapping("product/search")
     public ResponseEntity<Object> findByName(@RequestParam("name") String name,
                                              @RequestParam("page") Integer page,
@@ -157,11 +170,43 @@ public class IndexController {
                     .error(null)
                     .message("find product")
                     .path(request.getServletPath())
-                    .data(productService.findByName(name, page, size))
+                    .data(productService.findByNameContain(name, page, size))
                     .build(), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .error("Query error")
+                    .message(e.getLocalizedMessage())
+                    .path(request.getServletPath())
+                    .data(null)
+                    .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("product/search/amount")
+    public ResponseEntity<ResponseFormat> amountByName(@RequestParam("name") String name) {
+        return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
+                .error(null)
+                .message("get product success")
+                .path(request.getServletPath())
+                .data(productService.amountByName(name))
+                .build(), HttpStatus.OK);
+    }
+
+    @PostMapping("/change/password")
+    public ResponseEntity<ResponseFormat> changePasswd(@RequestBody Map map) {
+        try {
+            String before = map.get("before").toString();
+            String after = map.get("after").toString();
+            userService.changePasswd(before, after);
+            return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
+                    .error(null)
+                    .message("change password success")
+                    .path(request.getServletPath())
+                    .data(null)
+                    .build(), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .error("Change failed")
                     .message(e.getLocalizedMessage())
                     .path(request.getServletPath())
                     .data(null)
