@@ -274,18 +274,38 @@ public class ManageSellerController {
                                                 @RequestParam("size") Integer size) {
         try {
             List<BlackList> items = blackListService.list(type, page, size);
-            List<Object> list = new ArrayList<>();
+            List<BlackEntity> list = new ArrayList<>();
             if (null != Type.getByCode(type)) {
                 switch (Type.getByCode(type)) {
                     case SHOP: {
-                        for (BlackList item : items)
-                            list.add(shopService.finById(item.getEntityid()));
+                        for (BlackList item : items) {
+                            BlackEntity entity = new BlackEntity();
+                            entity.setId(item.getId());
+                            entity.setType(Type.SHOP);
+                            entity.setObject(shopService.finById(item.getEntityid()));
+                            list.add(entity);
+
+                        }
                     }
                     break;
-                    case SELLER:
+                    case SELLER: {
+                        for (BlackList item : items) {
+                            BlackEntity entity = new BlackEntity();
+                            entity.setId(item.getId());
+                            entity.setType(Type.SELLER);
+                            entity.setObject(userService.findById(item.getEntityid()));
+                            list.add(entity);
+                        }
+                    }
+                    break;
                     case CUSTOMER: {
-                        for (BlackList item : items)
-                            list.add(userService.findById(item.getEntityid()));
+                        for (BlackList item : items) {
+                            BlackEntity entity = new BlackEntity();
+                            entity.setId(item.getId());
+                            entity.setType(Type.CUSTOMER);
+                            entity.setObject(userService.findById(item.getEntityid()));
+                            list.add(entity);
+                        }
                     }
                     break;
                 }
