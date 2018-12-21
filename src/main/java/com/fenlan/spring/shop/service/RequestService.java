@@ -37,7 +37,7 @@ public class RequestService {
     }
 
     public List<Request> list(Integer status, int page, int size) throws Exception {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createTime"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updateTime"));
         List<Request> list;
         if (null == status)
             list = requestDAO.findAll(pageable).getContent();
@@ -51,7 +51,7 @@ public class RequestService {
 
     public Request add(Request request) throws Exception {
         try {
-            if (null == request.getName())
+            if (null == request.getName() || request.getName().equals(""))
                 throw new Exception("missing 'name'");
             else if (null != shopDAO.findByName(request.getName()))
                 throw new Exception("shop name is exist");
@@ -67,6 +67,8 @@ public class RequestService {
     public Request update(Long id, Integer status) throws Exception {
         if (id != null && status != null) {
             Request request = requestDAO.getOne(id);
+            if (!request.getStatus().equals(RequestStatus.PROCESS))
+                throw new Exception("request is not in process");
             request.setStatus(RequestStatus.values()[status]);
             // 批准申请
             if (status == 1 && null == shopService.findByUserId(request.getUser().getId())) {

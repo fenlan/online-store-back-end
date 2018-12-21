@@ -49,7 +49,7 @@ public class UserService implements UserDetailsService {
     }
 
     public User register(String username, String password, String telephone, String email, String address) throws Exception {
-        if (null == username)
+        if (null == username || username.equals(""))
             throw new Exception("username is required");
         else if (null == password)
             throw new Exception("password is required");
@@ -69,22 +69,22 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void changePasswd(String beforePasswd, String afterPasswd) throws Exception {
+    public void changePasswd(String exist, String newPasswd) throws Exception {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         user = userDAO.findById(user.getId()).get();
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getUsername(), beforePasswd);
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getUsername(), exist);
         try {
             manager.authenticate(token);
-            if (beforePasswd.equals(afterPasswd))
-                throw new InputMismatchException("beforePasswd is same as afterPasswd");
+            if (exist.equals(newPasswd))
+                throw new InputMismatchException("existing password is same as new password");
             else {
-                user.setPassword(new BCryptPasswordEncoder().encode(afterPasswd));
+                user.setPassword(new BCryptPasswordEncoder().encode(newPasswd));
                 userDAO.save(user);
             }
         } catch (InputMismatchException e) {
             throw e;
         } catch (Exception e) {
-            throw new Exception("before password is not correct");
+            throw new Exception("existing password is not correct");
         }
     }
 
@@ -100,6 +100,14 @@ public class UserService implements UserDetailsService {
             throw new Exception("no result or page param is bigger than normal");
         else
             return list;
+    }
+
+    public List<User> listCustomer(int page, int size) throws Exception {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "registerTime"));
+        List<User> list = userDAO.findAll(pageable).getContent();
+        if (list.size() == 0)
+            throw new Exception("no result or page param is bigger than normal");
+        return list;
     }
 
     public User findByName(String username) {
@@ -124,15 +132,31 @@ public class UserService implements UserDetailsService {
             throw new Exception(user.getUsername() + " " + "is not " + role.getName());
     }
 
-    public void delete(Long id) {
+    public void deleteSeller(Long id) throws Exception {
         User user = userDAO.findById(id).get();
+        if (null == user)
+            throw new Exception("not found this user");
         if (user.getRoles().contains(sysRoleDAO.findByName("ROLE_SELLER"))) {
             Shop shop = shopDAO.findByUser(user);
             shopDAO.deleteById(shop.getId());
-        }
-        List<SysRole> list = new ArrayList<>();
-        list.add(sysRoleDAO.findByName("ROLE_USER"));
-        user.setRoles(list);
-        userDAO.save(user);
+            List<SysRole> list = new ArrayList<>();
+            list.add(sysRoleDAO.findByName("ROLE_USER"));
+            user.setRoles(list);
+            userDAO.save(user);
+        } else
+            throw new Exception("this user is not seller");
+    }
+
+    public void deleteCustomer(Long id) throws Exception {
+        User user = userDAO.findById(id).get();
+        if (user.getRoles().contains(sysRoleDAO.findByName("ROLE_SELLER")))
+            deleteSeller(id);
+        if (user.getRoles().contains(sysRoleDAO.findByName("ROLE_ADMIN")))
+            throw new Exception("can't delete root");
+        userDAO.deleteById(id);
+    }
+
+    public Long amount() {
+        return userDAO.count();
     }
 }

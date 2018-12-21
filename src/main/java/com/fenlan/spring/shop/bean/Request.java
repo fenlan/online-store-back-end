@@ -1,10 +1,17 @@
 package com.fenlan.spring.shop.bean;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "request")
+@EntityListeners(AuditingEntityListener.class)
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,17 +19,19 @@ public class Request {
     @Column(name = "shopName")
     private String name;
     @ManyToOne(cascade = {CascadeType.MERGE},fetch = FetchType.EAGER)
+    @NotFound(action = NotFoundAction.IGNORE)
     private User user;
     private RequestStatus status;
     @Column(columnDefinition = "TEXT")
     private String image;
+    @Column(columnDefinition = "TEXT")
     private String info;
     private String email;
     private String telephone;
     private String alipay;
-    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @CreatedDate
     private Date createTime;
-    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @LastModifiedDate
     private Date updateTime;
 
     public Long getId() {
