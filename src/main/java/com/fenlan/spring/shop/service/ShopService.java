@@ -7,9 +7,11 @@ package com.fenlan.spring.shop.service;
  * @description:
  *   提供商店信息查看与修改功能
  */
+import com.fenlan.spring.shop.DAO.AdvertisementDAO;
 import com.fenlan.spring.shop.DAO.ShopDAO;
 import com.fenlan.spring.shop.DAO.SysRoleDAO;
 import com.fenlan.spring.shop.DAO.UserDAO;
+import com.fenlan.spring.shop.bean.Advertisement;
 import com.fenlan.spring.shop.bean.Shop;
 import com.fenlan.spring.shop.bean.SysRole;
 import com.fenlan.spring.shop.bean.User;
@@ -31,6 +33,8 @@ public class ShopService {
     UserDAO userDAO;
     @Autowired
     SysRoleDAO sysRoleDAO;
+    @Autowired
+    AdvertisementDAO advertisementDAO;
 
     private User authUser() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -117,16 +121,32 @@ public class ShopService {
         return shop;
     }
 
-    public Shop update(Shop shop) throws Exception {
+    public Shop update(String image, String info, String email, String telephone, String alipay) throws Exception {
         SysRole admin = sysRoleDAO.findByName("ROLE_SELLER");
         if (!authUser().getRoles().contains(admin))
             throw new Exception("don't have permission");
-        Shop shop1 = shopDAO.findById(shop.getId()).get();
-        if (null == shop1)
+        Shop shop = shopDAO.findByUser(authUser());
+        if (null == shop)
             throw new Exception("not found this shop");
-        if (null == shop.getName() || shop.getName().equals(""))
-            throw new Exception("must contain 'name' param");
-        shop.setUser(authUser());
+        shop.setImage(image);
+        shop.setInfo(info);
+        shop.setEmail(email);
+        shop.setTelephone(telephone);
+        shop.setAlipay(alipay);
         return shopDAO.save(shop);
+    }
+
+    /**
+     * 通过shopId查看该店铺是否应用于商城主页
+     * @param shopId
+     * @return
+     */
+    public boolean judgeWhereAppliedToMail(Long shopId){
+        try {
+            List<Advertisement> list = advertisementDAO.findByShopId(shopId);
+            return list.size() != 0;
+        }catch (Exception e){
+            return false;
+        }
     }
 }

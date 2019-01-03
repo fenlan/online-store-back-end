@@ -102,6 +102,28 @@ public class ManageProductController {
                 .build(), HttpStatus.OK);
     }
 
+    @GetMapping("/product/num")
+    public ResponseEntity<ResponseFormat> productNum(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserName = authentication.getName();
+        try {
+            Shop shop = shopService.findByUserName(currentUserName);
+            return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
+                    .error(null)
+                    .message("amount success")
+                    .path(request.getServletPath())
+                    .data(productService.amountProductOfShop(shop.getId(), ""))
+                    .build(), HttpStatus.OK);
+        }catch (Exception e) {
+            return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .error("amount error")
+                    .message(e.getLocalizedMessage())
+                    .path(request.getServletPath())
+                    .data(null)
+                    .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/product/list")
     public ResponseEntity<ResponseFormat> list(@RequestParam("page") Integer page,
                                                @RequestParam("size") Integer size) {
@@ -359,5 +381,30 @@ public class ManageProductController {
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    /**
+     * 查询商家某一商品是否应用于商城主页
+     *
+     */
+    @GetMapping("/product/advertisement/applytomail")
+    public ResponseEntity<ResponseFormat> judgeWhetherAppliedToMail(Long productId){
+        try {
+            return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.OK.value())
+                    .error(null)
+                    .message("query success")
+                    .path(request.getServletPath())
+                    .data(productService.judgeWhereAppliedToMail(productId))
+                    .build(), HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(new ResponseFormat.Builder(new Date(), HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .error("query failed")
+                    .message(e.getLocalizedMessage())
+                    .path(request.getServletPath())
+                    .data(null)
+                    .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }

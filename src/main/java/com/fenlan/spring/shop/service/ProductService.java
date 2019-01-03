@@ -1,13 +1,7 @@
 package com.fenlan.spring.shop.service;
 
-import com.fenlan.spring.shop.DAO.OrderDAO;
-import com.fenlan.spring.shop.DAO.ProductDAO;
-import com.fenlan.spring.shop.DAO.ShopDAO;
-import com.fenlan.spring.shop.DAO.UserDAO;
-import com.fenlan.spring.shop.bean.Order;
-import com.fenlan.spring.shop.bean.Product;
-import com.fenlan.spring.shop.bean.Shop;
-import com.fenlan.spring.shop.bean.User;
+import com.fenlan.spring.shop.DAO.*;
+import com.fenlan.spring.shop.bean.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +23,8 @@ public class ProductService {
     UserDAO userDAO;
     @Autowired
     OrderDAO orderDAO;
+    @Autowired
+    AdvertisementDAO advertisementDAO;
 
     private User authUser() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -280,5 +276,39 @@ public class ProductService {
         if (list.size() == 0)
             throw new Exception("no result or page param is bigger than normal");
         return list;
+    }
+
+    // 草率了事，未做异常处理
+    public List<Product> listShopProduct(Long shopId, Integer page, Integer size, String name) throws Exception {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createTime"));
+        List<Product> list;
+        if (null == name || name.equals(""))
+            list = productDAO.findAllByShopId(pageable, shopId);
+        else
+            list = productDAO.findAllByShopIdAndNameContaining(pageable, shopId, name);
+        if (list.size() == 0)
+            throw new Exception("no result or page param is bigger than normal");
+        return list;
+    }
+
+    public Long amountProductOfShop(Long shopId, String name) {
+        if (null == name || name.equals(""))
+            return productDAO.countByShopId(shopId);
+        else
+            return productDAO.countByShopIdAndNameContaining(shopId, name);
+    }
+
+    /**
+     * 通过productId查看该商品是否应用于商城主页
+     * @param productId
+     * @return
+     */
+    public boolean judgeWhereAppliedToMail(Long productId){
+        try {
+            List<Advertisement> list = advertisementDAO.findByProductId(productId);
+            return list.size() != 0;
+        }catch (Exception e){
+            return false;
+        }
     }
 }

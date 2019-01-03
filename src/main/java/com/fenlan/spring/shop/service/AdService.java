@@ -3,6 +3,9 @@ package com.fenlan.spring.shop.service;
 import com.fenlan.spring.shop.DAO.*;
 import com.fenlan.spring.shop.bean.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -76,7 +79,8 @@ public class AdService {
 
     }
 
-    public List<AdRequest> listOneDayRequest(Integer status) throws Exception {
+    public List<AdRequest> listOneDayRequest(Integer status, Integer page, Integer size) throws Exception {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createTime"));
         RequestStatus rs = RequestStatus.getByCode(status);
         if (null == rs)
             throw new Exception("param 'status' must be in ["
@@ -87,7 +91,11 @@ public class AdService {
         if (!authUser().getRoles().contains(admin))
             throw new Exception("don't have permission");
         return adRequestDAO
-                .findByCreateTimeGreaterThanEqualAndStatusOrderByFeeDesc(today(), rs);
+                .findByCreateTimeGreaterThanEqualAndStatusOrderByFeeDesc(pageable, today(), rs);
+    }
+
+    public Long amountOneDay() throws ParseException {
+        return adRequestDAO.countByCreateTimeGreaterThanEqual(today());
     }
 
     public List<Advertisement> listProductTop() throws ParseException {
@@ -103,9 +111,9 @@ public class AdService {
     private Advertisement approve(AdRequest request) throws Exception {
         Long amountOfProduct = advertisementDAO.countByCreateTimeGreaterThanEqualAndProductNotNull(today());
         Long amountOfShop = advertisementDAO.countByCreateTimeGreaterThanEqualAndShopNotNull(today());
-        if (null != request.getProduct() && amountOfProduct > 10)
+        if (null != request.getProduct() && amountOfProduct >= 10)
             throw new Exception("product advertisement is filled");
-        if (null != request.getShop() && amountOfShop > 5)
+        if (null != request.getShop() && amountOfShop >= 5)
             throw new Exception("shop advertisement is filled");
         Advertisement ad = new Advertisement();
         ad.setProduct(request.getProduct());
@@ -134,7 +142,7 @@ public class AdService {
         Long timestamp = new Date().getTime() - 24*60*60*1000;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String yesterday = format.format(new Date(timestamp)).substring(0,10);
-        Date date = format.parse(yesterday);
+        Date date = format.parse(yesterday + " 00:00:00");
         return date;
     }
 }
